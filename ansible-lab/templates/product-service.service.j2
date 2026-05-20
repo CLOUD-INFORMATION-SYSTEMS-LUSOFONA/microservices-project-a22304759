@@ -1,0 +1,14 @@
+[Unit]
+Description=Product Service
+After=network.target
+
+[Service]
+User={{ app_user }}
+WorkingDirectory={{ app_directory }}/product-service
+ExecStart=/usr/bin/java -jar target/*.jar
+Restart=always
+RestartSec=10
+Environment=SPRING_PROFILES_ACTIVE=production
+
+[Install]
+WantedBy=multi-user.target
