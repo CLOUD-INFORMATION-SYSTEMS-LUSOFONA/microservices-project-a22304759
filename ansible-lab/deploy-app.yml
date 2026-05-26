@@ -1,0 +1,51 @@
+---
+- name: Deploy Application
+  hosts: web_servers
+  become: yes
+
+  vars:
+    image_name: mrlau/product-service
+    image_tag: "{{ lookup('env', 'IMAGE_TAG') | default('latest', true) }}"
+    container_name: product-service
+    app_port: 8082
+
+  tasks:
+    - name: Install Docker
+      dnf:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull latest image
+      community.docker.docker_image:
+        name: "{{ image_name }}"
+        tag: "{{ image_tag }}"
+        source: pull
+
+    - name: Stop existing container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Start new container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}:{{ image_tag }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "{{ app_port }}:8082"
+        env:
+          SPRING_PROFILES_ACTIVE: "production"
+          SERVER_PORT: "8082"
+
+    - name: Show running containers
+      command: docker ps
+
+    - name: Show product-service logs
+      command: docker logs product-service
