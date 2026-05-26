@@ -10,3 +10,14 @@ jobs:
     with:
       service: product-service
     secrets: inherit
+
+  summary:
+    needs: product
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write summary
+        run: |
+          echo "### Deploy Report" >> $GITHUB_STEP_SUMMARY
+          echo "- Service: product-service" >> $GITHUB_STEP_SUMMARY
+          echo "- SHA: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Time: $(date -u)" >> $GITHUB_STEP_SUMMARY
